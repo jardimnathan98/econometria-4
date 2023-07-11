@@ -139,6 +139,44 @@ biggest_drop<-which.max(autovalores/autovalores1)
 biggest_drop
 
 autovalores_pad<-pca16_pad_result$sdev
+
+#########
+########## questao 2
+dados<-read.csv("2021-12.csv")
+dados$CPIAUCSL ==dados[,107] #ok
+
+dados[3,107] - dados[2,107]
+cpiaucsl<-(diff(dados$CPIAUCSL[-1] ) / lag(dados$CPIAUCSL[-1])[-1]) # yt - yt_1 / yt
+
+
+
+
+
+max_ordem <- 10
+bic_valores <- numeric(max_ordem)
+modelo <-ar(cpiaucsl, order = 2)
+BIC(modelo)
+for (p in 1:max_ordem) {
+  modelo <- arima(cpiaucsl, order = c(p,0,0))
+  bic_valores[p] <- BIC(modelo)
+}
+ordem_otima <- which.min(bic_valores)
+ordem_otima
+modelo <- arima(cpiaucsl, order = c(ordem_otima,0,0))
+previsoes <- predict(modelo, n.ahead = 1)$pred
+
+coeficientes_ar <- coef(modelo)
+sim<-cpiaucsl[746:754]
+simt<-rev(c(1,sim))
+
+prev<-coeficientes_ar%*%simt
+######### ar + pcr
+
+#olhar as trasnformadas e tirar os pcrs
+library(dynlm)
+
+pi<-cpiaucsl[2:(length(pc1)+1) ]
+m <- dynlm(pi ~ L(pi, 1) + L(pi, 2) + L(pi, 3) + pc1 + pc2)
 autovalores1_pad<<-c(autovalores_pad[-1],1)
 biggest_drop_pad<-which.max(autovalores_pad/autovalores1_pad)
 biggest_drop_pad
