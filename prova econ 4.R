@@ -42,6 +42,8 @@ for(i in 2:length(prop_var_acum)){
 }
 thumb_pad
 
+# Pela regra de bolso foram selecionados 2 componentes.
+
 #########Biggest Drop
 autovalores<-pca_result$sdev
 autovalores1<<-c(autovalores[-1],1)
@@ -53,8 +55,15 @@ autovalores1_pad<<-c(autovalores_pad[-1],1)
 biggest_drop_pad<-which.max(autovalores_pad/autovalores1_pad)
 biggest_drop_pad
 
+#Pelo biggest drop foram selecionados 325 componentes.
 ############
 
+# Pela regra de bolso foram selecionados os 2 primeiros componentes. Usando as variáveis padronizadas, os 2
+# primeiros componentes explicam:
+print(summary_pca$importance["Cumulative Proportion","PC2"])
+##### 0.09503 da variância.
+
+## b)
 
 pc1<-pca_pad_result$x[,1]
 dados<-data.frame(pc1, scale(returns[,2:17]))
@@ -183,8 +192,5 @@ biggest_drop_pad
 
 ############
 
-#economia
-
-economia2
 
 
