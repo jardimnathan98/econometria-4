@@ -170,7 +170,7 @@ sim<-cpiaucsl[746:754]
 simt<-rev(c(1,sim))
 
 prev<-coeficientes_ar%*%simt
-######### ar + pcr
+######### ar + pcr 
 
 #olhar as trasnformadas e tirar os pcrs
 library(dynlm)
@@ -182,4 +182,9 @@ biggest_drop_pad<-which.max(autovalores_pad/autovalores1_pad)
 biggest_drop_pad
 
 ############
+
+#economia
+
+
+
 
