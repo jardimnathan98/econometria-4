@@ -259,9 +259,72 @@ modelo$residuals
 ic<-ICr(fred)
 ic$r.star[2]
 pca_fred<-prcomp(scale(fred))
+pca_fred$x[,20]
+#lm(res~ pca_fred$x[,1]... pca_fred$x[,20] ) e acho os coeficientes 
 
+#faço previsao com ar e pcr juntos 
 
-#olhar as trasnformadas e tirar os pcrs
+res<-modelo$residuals
+########### ridge
+library(glmnet)
+library(glmnetUtils) 
+
+res<-as.vector(res)
+fit <- cv.glmnet( scale(fred[,-87]), res, alpha = 0)
+
+# Use information criteria to select lambda -----------------------------------
+X_scaled <- scale(fred[,-87])
+lambdas_to_try <- 10^seq(-3, 5, length.out = 100)
+aic <- c()
+bic <- c()
+
+for (lambda in seq(lambdas_to_try)) {
+#lambda =1
+    # Run model
+  model <- glmnet(X_scaled, res, alpha = 0, lambda = lambdas_to_try[lambda], standardize = TRUE)
+  # Extract coefficients and residuals (remove first row for the intercept)
+  betas <- as.vector((as.matrix(coef(model))[-1, ]))
+  resid_try <- res - (X_scaled %*% betas)
+  # Compute hat-matrix and degrees of freedom
+  ld <- lambdas_to_try[lambda] * diag(ncol(X_scaled))
+  H <- X_scaled %*% solve(t(X_scaled) %*% X_scaled + ld) %*% t(X_scaled)
+  df <- sum(diag(H))
+  # Compute information criteria
+
+  bic[lambda] <-  log(t(resid_try) %*% resid_try) + 2* df * log(nrow(X_scaled))/nrow(X_scaled)
+}
+
+# Fit final models, get their sum of squared residuals and multiple R-squared
+lambda_bic <- lambdas_to_try[which.min(bic)]
+
+model_bic <- glmnet(X_scaled, res, lambda = lambda_bic, standardize = TRUE)
+
+summary(model_bic)
+coef_ridge<-coef(model_bic)
+
+########### lasso
+
+lambdas_to_try <- 10^seq(-3, 5, length.out = 100)
+aic <- c()
+bic <- c()
+
+for (lambda in seq(lambdas_to_try)) {
+
+  # Run model
+  model <- glmnet(X_scaled, res, alpha = 1, lambda = lambdas_to_try[lambda], standardize = TRUE)
+  # Extract coefficients and residuals (remove first row for the intercept)
+  betas <- as.vector((as.matrix(coef(model))[-1, ]))
+  resid_try <- res - (X_scaled %*% betas)
+  # Compute hat-matrix and degrees of freedom
+ 
+  df = model$df
+  # Compute information criteria
+  
+  bic[lambda] <-  log(t(resid_try) %*% resid_try) + 2 * df * log(nrow(X_scaled))/nrow(X_scaled)
+}
+summary(model)
+coef_lasso<-coef(model)
+
 
 
 
